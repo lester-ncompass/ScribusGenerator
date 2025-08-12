@@ -9,17 +9,17 @@ import os
 import re
 import scribus
 
-DefaultPath='C:/' ### change
+DefaultPath = "C:/"  ### change
 
-Edoc=scribus.getDocName()
+Edoc = scribus.getDocName()
 objL = scribus.getAllObjects()
 for obj in objL:
-	objT=scribus.getObjectType(obj)
-	Evar=''
-	if objT=='ImageFrame':
-		Etype='image'
-		Evar=scribus.getImageFile(obj)
-		if '%VAR_' in Evar:
-			Evar=re.search(r'(.*)/(.*)',Evar).group(2)
-			Evar=DefaultPath+Evar
-			scribus.loadImage(Evar,obj)
+    objT = scribus.getObjectType(obj)
+    Evar = ""
+    if objT == "ImageFrame":
+        Etype = "image"
+        Evar = scribus.getImageFile(obj)
+        if "%VAR_" in Evar:
+            Evar = re.search(r"(.*)/(.*)", Evar).group(2)
+            Evar = DefaultPath + Evar
+            scribus.loadImage(Evar, obj)

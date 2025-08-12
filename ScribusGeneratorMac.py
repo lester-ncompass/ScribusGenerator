@@ -40,12 +40,12 @@ from ScribusGeneratorBackend import CONST, ScribusGenerator, GeneratorDataObject
 class GeneratorControl:
     # Controller being the bridge between UI and Logic.
     def __init__(self):
-        self.__dataSourceFileEntryVariable = ''
-        self.__scribusSourceFileEntryVariable = ''
+        self.__dataSourceFileEntryVariable = ""
+        self.__scribusSourceFileEntryVariable = ""
         self.__dataSeparatorEntryVariable = CONST.CSV_SEP
         self.__dataEncodingEntryVariable = CONST.CSV_ENCODING
-        self.__outputDirectoryEntryVariable = ''
-        self.__outputFileNameEntryVariable = ''
+        self.__outputDirectoryEntryVariable = ""
+        self.__outputFileNameEntryVariable = ""
         # SLA & PDF are valid output format
         self.__outputFormatList = [CONST.FORMAT_PDF, CONST.FORMAT_SLA]
         self.__selectedOutputFormat = CONST.FORMAT_PDF
@@ -59,9 +59,9 @@ class GeneratorControl:
             doc = scribus.getDocName()
             self.__scribusSourceFileEntryVariable = doc
             self.__outputDirectoryEntryVariable = os.path.split(doc)[0]
-            self.__dataSourceFileEntryVariable = os.path.splitext(doc)[0]+".csv"
+            self.__dataSourceFileEntryVariable = os.path.splitext(doc)[0] + ".csv"
         else:
-            doc = ''
+            doc = ""
 
     def getDataSourceFileEntryVariable(self):
         return self.__dataSourceFileEntryVariable
@@ -146,13 +146,14 @@ class GeneratorControl:
 
     def allValuesSet(self):
         result = 0
-        if ((self.__scribusSourceFileEntryVariable != CONST.EMPTY) and
-            (self.__dataSourceFileEntryVariable != CONST.EMPTY) and
-            (len(self.__dataEncodingEntryVariable) >= 4) and
-            (len(self.__dataSeparatorEntryVariable) == 1)):
+        if (
+            (self.__scribusSourceFileEntryVariable != CONST.EMPTY)
+            and (self.__dataSourceFileEntryVariable != CONST.EMPTY)
+            and (len(self.__dataEncodingEntryVariable) >= 4)
+            and (len(self.__dataSeparatorEntryVariable) == 1)
+        ):
             result = 1
         return result
-
 
     def createGeneratorDataObject(self):
         # Collect the settings the user has made and build the Data Object
@@ -169,70 +170,134 @@ class GeneratorControl:
             firstRow=self.__fromVariable,
             lastRow=self.__toVariable,
             saveSettings=self.__saveSettingsVariable,
-            closeDialog=self.__closeDialogVariable
+            closeDialog=self.__closeDialogVariable,
         )
         return result
 
     def buttonCancelHandler(self):
-        scribus.messageBox('function','Scribus Generator operation aborted!', scribus.ICON_WARNING)
+        scribus.messageBox(
+            "function", "Scribus Generator operation aborted!", scribus.ICON_WARNING
+        )
         sys.exit()
 
     def buttonOkHandler(self):
-        if (CONST.TRUE == self.allValuesSet()):
+        if CONST.TRUE == self.allValuesSet():
             dataObject = self.createGeneratorDataObject()
             generator = ScribusGenerator(dataObject)
             try:
                 generator.run()
-                if(dataObject.getCloseDialog()):
-                    scribus.messageBox('Scribus Generator', 'Done. Generated files are in\n'+dataObject.getOutputDirectory(), scribus.ICON_NONE, scribus.BUTTON_OK)
+                if dataObject.getCloseDialog():
+                    scribus.messageBox(
+                        "Scribus Generator",
+                        "Done. Generated files are in\n"
+                        + dataObject.getOutputDirectory(),
+                        scribus.ICON_NONE,
+                        scribus.BUTTON_OK,
+                    )
                     sys.exit()
                 else:
-                    result = scribus.messageBox('Scribus Generator', 'Done. Generated files are in:\n'+dataObject.getOutputDirectory()+'\nClick OK to Generate more data-driven documents.', scribus.ICON_NONE, scribus.BUTTON_OK, scribus.BUTTON_CANCEL)
-                    if (result == scribus.BUTTON_OK):
-                        main_wrapper(sys.argv) # user wants dialog kept open so wrap around and start again
+                    result = scribus.messageBox(
+                        "Scribus Generator",
+                        "Done. Generated files are in:\n"
+                        + dataObject.getOutputDirectory()
+                        + "\nClick OK to Generate more data-driven documents.",
+                        scribus.ICON_NONE,
+                        scribus.BUTTON_OK,
+                        scribus.BUTTON_CANCEL,
+                    )
+                    if result == scribus.BUTTON_OK:
+                        main_wrapper(
+                            sys.argv
+                        )  # user wants dialog kept open so wrap around and start again
                     else:
                         sys.exit()
 
             except IOError as e:  # except FileNotFoundError as e:
-                scribus.messageBox('File Not Found', 'Could not find some input file, please verify your Scribus and Data file settings:\n\n'+str(e), scribus.ICON_WARNING, scribus.BUTTON_OK)
+                scribus.messageBox(
+                    "File Not Found",
+                    "Could not find some input file, please verify your Scribus and Data file settings:\n\n"
+                    + str(e),
+                    scribus.ICON_WARNING,
+                    scribus.BUTTON_OK,
+                )
             except ValueError as e:
-                scribus.messageBox('Variable Error', 'Could likely not replace a variable with its value,\nplease check your Data File and Data Separator settings:\n\n'+str(e), scribus.ICON_WARNING, scribus.BUTTON_OK)
+                scribus.messageBox(
+                    "Variable Error",
+                    "Could likely not replace a variable with its value,\nplease check your Data File and Data Separator settings:\n\n"
+                    + str(e),
+                    scribus.ICON_WARNING,
+                    scribus.BUTTON_OK,
+                )
             except IndexError as e:
-                scribus.messageBox('Variable Error', 'Could not find the value for one variable.\nplease check your Data File and Data Separator settings.\n\n'+str(e), scribus.ICON_WARNING, scribus.BUTTON_OK)
+                scribus.messageBox(
+                    "Variable Error",
+                    "Could not find the value for one variable.\nplease check your Data File and Data Separator settings.\n\n"
+                    + str(e),
+                    scribus.ICON_WARNING,
+                    scribus.BUTTON_OK,
+                )
             except Exception:
-                scribus.messageBox('Error Scribus Generator',"Something went wrong.\n\nRead the log file for more (in your home directory)."+traceback.format_exc(), scribus.ICON_WARNING, scribus.BUTTON_OK)
+                scribus.messageBox(
+                    "Error Scribus Generator",
+                    "Something went wrong.\n\nRead the log file for more (in your home directory)."
+                    + traceback.format_exc(),
+                    scribus.ICON_WARNING,
+                    scribus.BUTTON_OK,
+                )
         else:
-            scribus.messageBox('Validation Failed', 'Please check if all settings have been set correctly!', scribus.ICON_WARNING, scribus.BUTTON_OK)
-
+            scribus.messageBox(
+                "Validation Failed",
+                "Please check if all settings have been set correctly!",
+                scribus.ICON_WARNING,
+                scribus.BUTTON_OK,
+            )
 
     def scribusLoadSettingsHandler(self):
         slaFile = GeneratorControl.getScribusSourceFileEntryVariable(self)
 
-        if(slaFile is CONST.EMPTY):
-            scribus.fileDialog('Choose a file', 'Set a valid Scribus *.sla input file prior to loading its settings')
+        if slaFile is CONST.EMPTY:
+            scribus.fileDialog(
+                "Choose a file",
+                "Set a valid Scribus *.sla input file prior to loading its settings",
+            )
             return
-        dataObject = GeneratorDataObject(
-            scribusSourceFile=slaFile
-        )
+        dataObject = GeneratorDataObject(scribusSourceFile=slaFile)
         generator = ScribusGenerator(dataObject)
         saved = generator.get_saved_settings()
-        if (saved):
+        if saved:
             dataObject.loadFromString(saved)
             # self.__scribusSourceFileEntryVariable = StringVar() #not loaded
-            GeneratorControl.setDataSourceFileEntryVariable(self, dataObject.getDataSourceFile())
-            GeneratorControl.setDataSeparatorEntryVariable(self, dataObject.getCsvSeparator())
-            GeneratorControl.setDataEncodingEntryVariable(self, dataObject.getCsvEncoding())
-            GeneratorControl.setOutputDirectoryEntryVariable(self, dataObject.getOutputDirectory())
-            GeneratorControl.setOutputFileNameEntryVariable(self, dataObject.getOutputFileName())
+            GeneratorControl.setDataSourceFileEntryVariable(
+                self, dataObject.getDataSourceFile()
+            )
+            GeneratorControl.setDataSeparatorEntryVariable(
+                self, dataObject.getCsvSeparator()
+            )
+            GeneratorControl.setDataEncodingEntryVariable(
+                self, dataObject.getCsvEncoding()
+            )
+            GeneratorControl.setOutputDirectoryEntryVariable(
+                self, dataObject.getOutputDirectory()
+            )
+            GeneratorControl.setOutputFileNameEntryVariable(
+                self, dataObject.getOutputFileName()
+            )
             GeneratorControl.setSelectedOutputFormat(self, dataObject.getOutputFormat())
-            GeneratorControl.setKeepGeneratedScribusFilesVariable(self, dataObject.getKeepGeneratedScribusFiles())
+            GeneratorControl.setKeepGeneratedScribusFilesVariable(
+                self, dataObject.getKeepGeneratedScribusFiles()
+            )
             GeneratorControl.setMergeOutputVariable(self, dataObject.getSingleOutput())
             # GeneratorControl.saveCheckboxVariable = IntVar() #not loaded
             GeneratorControl.setFromVariable(self, dataObject.getFirstRow())
             GeneratorControl.setToVariable(self, dataObject.getLastRow())
             GeneratorControl.setCloseDialogVariable(self, dataObject.getCloseDialog())
         else:
-            scribus.messageBox('No Settings', 'Input Scribus file contains no former saved settings.', scribus.ICON_WARNING, scribus.BUTTON_OK|BUTTON_DEFAULT)
+            scribus.messageBox(
+                "No Settings",
+                "Input Scribus file contains no former saved settings.",
+                scribus.ICON_WARNING,
+                scribus.BUTTON_OK | BUTTON_DEFAULT,
+            )
 
 
 class GeneratorDialog:
@@ -242,119 +307,223 @@ class GeneratorDialog:
         self.__ctrl = ctrl
 
     def show(self):
-        scribus.messageBox("Scribus Generator","SCRIBUS GENERATOR\nYou will be asked in a series of dialogs for the Scribus template and data files, as well as what output format you would like.",scribus.ICON_NONE,scribus.BUTTON_OK)
-        scribusFile = scribus.fileDialog('Select Scribus Template File:', 'Scribus(*.sla *.SLA)', defaultname=''+self.__ctrl.getScribusSourceFileEntryVariable()+'')
-        if (scribusFile == ''):
+        scribus.messageBox(
+            "Scribus Generator",
+            "SCRIBUS GENERATOR\nYou will be asked in a series of dialogs for the Scribus template and data files, as well as what output format you would like.",
+            scribus.ICON_NONE,
+            scribus.BUTTON_OK,
+        )
+        scribusFile = scribus.fileDialog(
+            "Select Scribus Template File:",
+            "Scribus(*.sla *.SLA)",
+            defaultname="" + self.__ctrl.getScribusSourceFileEntryVariable() + "",
+        )
+        if scribusFile == "":
             self.__ctrl.buttonCancelHandler()
         self.__ctrl.setScribusSourceFileEntryVariable(scribusFile)
         # check for Saved Settings
         storedSettings = 0
-        dataObject = GeneratorDataObject(
-            scribusSourceFile = scribusFile
-        )
+        dataObject = GeneratorDataObject(scribusSourceFile=scribusFile)
         generator = ScribusGenerator(dataObject)
         saved = generator.get_saved_settings()
-        if (saved):
-            result = scribus.messageBox('Load Settings', 'Saved Settings have been found for this template. Would you like to see them?', scribus.ICON_NONE, scribus.BUTTON_YES, scribus.BUTTON_NO)
-            if (result == scribus.BUTTON_YES):
+        if saved:
+            result = scribus.messageBox(
+                "Load Settings",
+                "Saved Settings have been found for this template. Would you like to see them?",
+                scribus.ICON_NONE,
+                scribus.BUTTON_YES,
+                scribus.BUTTON_NO,
+            )
+            if result == scribus.BUTTON_YES:
                 dataObject.loadFromString(saved)
                 # make some of it easier for humans to read
-                if (dataObject.getFirstRow() != '' or dataObject.getLastRow() != ''):
-                    fromrow = 'row '+str(dataObject.getFirstRow())
-                    torow = 'row '+str(dataObject.getLastRow())
+                if dataObject.getFirstRow() != "" or dataObject.getLastRow() != "":
+                    fromrow = "row " + str(dataObject.getFirstRow())
+                    torow = "row " + str(dataObject.getLastRow())
                 else:
-                    fromrow = 'FIRST row'
-                    torow = 'LAST row'
-                if (dataObject.getKeepGeneratedScribusFiles() == 1):
-                    keep = 'Yes'
+                    fromrow = "FIRST row"
+                    torow = "LAST row"
+                if dataObject.getKeepGeneratedScribusFiles() == 1:
+                    keep = "Yes"
                 else:
-                    keep = 'No'
-                if (dataObject.getSingleOutput() == 1):
-                    merge = 'Yes'
+                    keep = "No"
+                if dataObject.getSingleOutput() == 1:
+                    merge = "Yes"
                 else:
-                    merge = 'No'
-                if (dataObject.getCloseDialog() == 1):
-                    closegen = 'Yes'
+                    merge = "No"
+                if dataObject.getCloseDialog() == 1:
+                    closegen = "Yes"
                 else:
-                    closegen = 'No'
-                loadthem = scribus.messageBox('Load Settings', 'SAVED SETTINGS:\n'+
-                    'Data File: '+str(dataObject.getDataSourceFile())+'\n'+
-                    'Separator: '+str(dataObject.getCsvSeparator())+'\n'+
-                    'Data from '+fromrow+' to '+torow+'\n'+
-                    'Encoding:  '+str(dataObject.getCsvEncoding())+'\n'+
-                    'Save Dir:  '+str(dataObject.getOutputDirectory())+'\n'+
-                    'Filename:  '+str(dataObject.getOutputFileName())+'\n'+
-                    'Format:    '+str(dataObject.getOutputFormat())+'\n'+
-                    'Keep Files: '+keep+'\n'+
-                    'Merge Docs: '+merge+'\n'+
-                    'Close Generator: '+closegen+'\n'+
-                    '\nWould you like to LOAD and USE these settings?',scribus.ICON_NONE, scribus.BUTTON_YES, scribus.BUTTON_NO)
-                if (loadthem == scribus.BUTTON_YES):
+                    closegen = "No"
+                loadthem = scribus.messageBox(
+                    "Load Settings",
+                    "SAVED SETTINGS:\n"
+                    + "Data File: "
+                    + str(dataObject.getDataSourceFile())
+                    + "\n"
+                    + "Separator: "
+                    + str(dataObject.getCsvSeparator())
+                    + "\n"
+                    + "Data from "
+                    + fromrow
+                    + " to "
+                    + torow
+                    + "\n"
+                    + "Encoding:  "
+                    + str(dataObject.getCsvEncoding())
+                    + "\n"
+                    + "Save Dir:  "
+                    + str(dataObject.getOutputDirectory())
+                    + "\n"
+                    + "Filename:  "
+                    + str(dataObject.getOutputFileName())
+                    + "\n"
+                    + "Format:    "
+                    + str(dataObject.getOutputFormat())
+                    + "\n"
+                    + "Keep Files: "
+                    + keep
+                    + "\n"
+                    + "Merge Docs: "
+                    + merge
+                    + "\n"
+                    + "Close Generator: "
+                    + closegen
+                    + "\n"
+                    + "\nWould you like to LOAD and USE these settings?",
+                    scribus.ICON_NONE,
+                    scribus.BUTTON_YES,
+                    scribus.BUTTON_NO,
+                )
+                if loadthem == scribus.BUTTON_YES:
                     storedSettings = 1
                     self.__ctrl.scribusLoadSettingsHandler()
                     self.__ctrl.buttonOkHandler()
             else:
                 storedSettings = 0
         # Either there are no Saved Settings OR the User did not want to use them.
-        if (storedSettings == 0):
-            dataFile = scribus.fileDialog('Select Data File:', 'Data(*.csv *.CSV *.tsv *.TSV *.txt *.TXT)', defaultname=''+self.__ctrl.getDataSourceFileEntryVariable()+'')
-            if (dataFile == ''):
+        if storedSettings == 0:
+            dataFile = scribus.fileDialog(
+                "Select Data File:",
+                "Data(*.csv *.CSV *.tsv *.TSV *.txt *.TXT)",
+                defaultname="" + self.__ctrl.getDataSourceFileEntryVariable() + "",
+            )
+            if dataFile == "":
                 self.__ctrl.buttonCancelHandler()
             self.__ctrl.setDataSourceFileEntryVariable(dataFile)
-            dataSeparator = scribus.valueDialog('Data Field Separator:','comma, pipe, etc.', self.__ctrl.getDataSeparatorEntryVariable())
-            if (dataSeparator == ''):
+            dataSeparator = scribus.valueDialog(
+                "Data Field Separator:",
+                "comma, pipe, etc.",
+                self.__ctrl.getDataSeparatorEntryVariable(),
+            )
+            if dataSeparator == "":
                 self.__ctrl.buttonCancelHandler()
             self.__ctrl.setDataSeparatorEntryVariable(dataSeparator)
-            dataEncoding = scribus.valueDialog('Data Encoding:', 'typically UTF-8', self.__ctrl.getDataEncodingEntryVariable())
+            dataEncoding = scribus.valueDialog(
+                "Data Encoding:",
+                "typically UTF-8",
+                self.__ctrl.getDataEncodingEntryVariable(),
+            )
             self.__ctrl.setDataEncodingEntryVariable(dataEncoding)
-            result = scribus.messageBox('Use Partial Data? (optional)', 'If you select Yes you will be asked to enter from-to in the next dialogs', scribus.ICON_NONE, scribus.BUTTON_YES, scribus.BUTTON_NO)
-            if (result == scribus.BUTTON_YES):
-                fromEntry = scribus.valueDialog('Use Partial Data', 'FROM:', self.__ctrl.getFromVariable())
-                toEntry = scribus.valueDialog('Use Partial Data', 'TO:', self.__ctrl.getToVariable())
+            result = scribus.messageBox(
+                "Use Partial Data? (optional)",
+                "If you select Yes you will be asked to enter from-to in the next dialogs",
+                scribus.ICON_NONE,
+                scribus.BUTTON_YES,
+                scribus.BUTTON_NO,
+            )
+            if result == scribus.BUTTON_YES:
+                fromEntry = scribus.valueDialog(
+                    "Use Partial Data", "FROM:", self.__ctrl.getFromVariable()
+                )
+                toEntry = scribus.valueDialog(
+                    "Use Partial Data", "TO:", self.__ctrl.getToVariable()
+                )
             else:
-                fromEntry = ''
-                toEntry = ''
+                fromEntry = ""
+                toEntry = ""
             self.__ctrl.setFromVariable(fromEntry)
             self.__ctrl.setToVariable(toEntry)
-            outputDirectory = scribus.fileDialog('Select Output Directory', '', defaultname=self.__ctrl.getOutputDirectoryEntryVariable(), isdir=True)
+            outputDirectory = scribus.fileDialog(
+                "Select Output Directory",
+                "",
+                defaultname=self.__ctrl.getOutputDirectoryEntryVariable(),
+                isdir=True,
+            )
             self.__ctrl.setOutputDirectoryEntryVariable(outputDirectory)
-            outputFileName = scribus.valueDialog('Output File Name', 'Enter output file name without extension.\nYou can also include a %VAR_name% from your data file.\nIf you leave this blank file name will be an incremented number.', self.__ctrl.getOutputFileNameEntryVariable())
+            outputFileName = scribus.valueDialog(
+                "Output File Name",
+                "Enter output file name without extension.\nYou can also include a %VAR_name% from your data file.\nIf you leave this blank file name will be an incremented number.",
+                self.__ctrl.getOutputFileNameEntryVariable(),
+            )
             # if output file name has no VAR from data file use VAR_COUNT to prevent multiple files overwriting each other
-            if outputFileName != '' and "%VAR_" not in outputFileName:
+            if outputFileName != "" and "%VAR_" not in outputFileName:
                 outputFileName = outputFileName + "%VAR_COUNT%"
             self.__ctrl.setOutputFileNameEntryVariable(outputFileName)
-            result = scribus.valueDialog('File Format','Set Output File Format (PDF or SLA)','PDF')
-            if (result == 'SLA'):
+            result = scribus.valueDialog(
+                "File Format", "Set Output File Format (PDF or SLA)", "PDF"
+            )
+            if result == "SLA":
                 outputFormat = CONST.FORMAT_SLA
             else:
                 outputFormat = CONST.FORMAT_PDF
             self.__ctrl.setSelectedOutputFormat(outputFormat)
-            result = scribus.messageBox('Merge','Do you want to merge into a single file?',scribus.ICON_NONE, scribus.BUTTON_YES, scribus.BUTTON_NO)
-            if (result == scribus.BUTTON_YES):
+            result = scribus.messageBox(
+                "Merge",
+                "Do you want to merge into a single file?",
+                scribus.ICON_NONE,
+                scribus.BUTTON_YES,
+                scribus.BUTTON_NO,
+            )
+            if result == scribus.BUTTON_YES:
                 mergeOutput = 1
             else:
                 mergeOutput = 0
             self.__ctrl.setMergeOutputVariable(mergeOutput)
-            result = scribus.messageBox('Keep Files', 'Do you want to keep the generated Scribus files?', scribus.ICON_NONE, scribus.BUTTON_YES, scribus.BUTTON_NO)
-            if (result == scribus.BUTTON_YES):
+            result = scribus.messageBox(
+                "Keep Files",
+                "Do you want to keep the generated Scribus files?",
+                scribus.ICON_NONE,
+                scribus.BUTTON_YES,
+                scribus.BUTTON_NO,
+            )
+            if result == scribus.BUTTON_YES:
                 keepScribusFiles = 1
             else:
                 keepScribusFiles = 0
             self.__ctrl.setKeepGeneratedScribusFilesVariable(keepScribusFiles)
-            result = scribus.messageBox('Close Generator', 'Do you want to close Generator after this operation succeeds?\n', scribus.ICON_NONE, scribus.BUTTON_YES, scribus.BUTTON_NO)
-            if (result == scribus.BUTTON_YES):
+            result = scribus.messageBox(
+                "Close Generator",
+                "Do you want to close Generator after this operation succeeds?\n",
+                scribus.ICON_NONE,
+                scribus.BUTTON_YES,
+                scribus.BUTTON_NO,
+            )
+            if result == scribus.BUTTON_YES:
                 closeDialog = 1
             else:
                 closeDialog = 0
             self.__ctrl.setCloseDialogVariable(closeDialog)
-            result = scribus.messageBox('Save Settings','Would you like to save these settings?', scribus.ICON_NONE, scribus.BUTTON_YES, scribus.BUTTON_NO)
-            if (result == scribus.BUTTON_YES):
+            result = scribus.messageBox(
+                "Save Settings",
+                "Would you like to save these settings?",
+                scribus.ICON_NONE,
+                scribus.BUTTON_YES,
+                scribus.BUTTON_NO,
+            )
+            if result == scribus.BUTTON_YES:
                 saveSettings = 1
             else:
                 saveSettings = 0
             self.__ctrl.setSaveSettingsVariable(saveSettings)
-            result = scribus.messageBox('Scribus Generator','Generate new document(s) from template and data file?', scribus.ICON_NONE, scribus.BUTTON_OK, scribus.BUTTON_CANCEL)
-            if (result == scribus.BUTTON_OK):
+            result = scribus.messageBox(
+                "Scribus Generator",
+                "Generate new document(s) from template and data file?",
+                scribus.ICON_NONE,
+                scribus.BUTTON_OK,
+                scribus.BUTTON_CANCEL,
+            )
+            if result == scribus.BUTTON_OK:
                 self.__ctrl.buttonOkHandler()
             else:
                 self.__ctrl.buttonCancelHandler()
@@ -365,9 +534,10 @@ def main(argv):
     dlg = GeneratorDialog(ctrl)
     dlg.show()
 
+
 def main_wrapper(argv):
     try:
-        if(scribus.haveDoc()):
+        if scribus.haveDoc():
             scribus.setRedraw(False)
         scribus.statusMessage(CONST.APP_NAME)
         scribus.progressReset()
@@ -377,11 +547,11 @@ def main_wrapper(argv):
         # Exit neatly even if the script terminated with an exception,
         # so we leave the progress bar and status bar blank and make sure
         # drawing is enabled.
-        if(scribus.haveDoc()):
+        if scribus.haveDoc():
             scribus.setRedraw(True)
-        scribus.statusMessage('')
+        scribus.statusMessage("")
         scribus.progressReset()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main_wrapper(sys.argv)

@@ -36,11 +36,12 @@ from ScribusGeneratorBackend import CONST, ScribusGenerator, GeneratorDataObject
 outDir = os.getcwd()
 
 # parse options
-parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                 description=''' Generate Scribus (SLA) documents automatically from external (csv) data.
- Mail-Merge-like extension to Scribus.''',
-                                 usage="%(prog)s [options] infiles+",
-                                 epilog='''requirements
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description=""" Generate Scribus (SLA) documents automatically from external (csv) data.
+ Mail-Merge-like extension to Scribus.""",
+    usage="%(prog)s [options] infiles+",
+    epilog="""requirements
     This program requires Python 3.0+
 
 examples:
@@ -68,39 +69,88 @@ examples:
 
 
  more information: https://github.com/berteh/ScribusGenerator/
- ''')
-parser.add_argument('infiles', nargs='+',
-                    help='SLA file(s) to use as template(s) for the generation, wildcards are supported')
-parser.add_argument('-c', '--dataFile', default=None,
-                    help='CSV/JSON data file containing the data to substitute in each template during generation. Default is scribus source file(s) name with "csv" extension instead of "sla". If csv file is not found, generation from this particular template is skipped.')
-parser.add_argument('-d', '--csvDelimiter', default=CONST.CSV_SEP,
-                    help='CSV field delimiter character. Default is comma: ","')
-parser.add_argument('-e', '--csvEncoding', default=CONST.CSV_ENCODING,
-                    help='Encoding of the CSV file (default: utf-8)')
+ """,
+)
+parser.add_argument(
+    "infiles",
+    nargs="+",
+    help="SLA file(s) to use as template(s) for the generation, wildcards are supported",
+)
+parser.add_argument(
+    "-c",
+    "--dataFile",
+    default=None,
+    help='CSV/JSON data file containing the data to substitute in each template during generation. Default is scribus source file(s) name with "csv" extension instead of "sla". If csv file is not found, generation from this particular template is skipped.',
+)
+parser.add_argument(
+    "-d",
+    "--csvDelimiter",
+    default=CONST.CSV_SEP,
+    help='CSV field delimiter character. Default is comma: ","',
+)
+parser.add_argument(
+    "-e",
+    "--csvEncoding",
+    default=CONST.CSV_ENCODING,
+    help="Encoding of the CSV file (default: utf-8)",
+)
 # parser.add_argument('-f', '--fast', '--noPdf', action='store_true', default=False, # commented utile Scribus allows pdf generation from command line
 #    help='no PDF generation, scribus SLA only (much faster)')
-parser.add_argument('-n', '--outName', default=CONST.EMPTY,
-                    help='name of the generated files, with no extension. Default is a simple incremental index. Using SG variables is allowed to define the name of generated documents. Use %%VAR_COUNT%% as a unique counter defined automatically from the data entry position.')
-parser.add_argument('-o', '--outDir', default=None,
-                    help='directory were generated files are stored. Default is the directory of the scribus source file. outputDir will be created if it does not exist.')
+parser.add_argument(
+    "-n",
+    "--outName",
+    default=CONST.EMPTY,
+    help="name of the generated files, with no extension. Default is a simple incremental index. Using SG variables is allowed to define the name of generated documents. Use %%VAR_COUNT%% as a unique counter defined automatically from the data entry position.",
+)
+parser.add_argument(
+    "-o",
+    "--outDir",
+    default=None,
+    help="directory were generated files are stored. Default is the directory of the scribus source file. outputDir will be created if it does not exist.",
+)
 # parser.add_argument('-p', '--pdfOnly', '--noSla', action='store_true', default=False, # for pdf from CLI
 #    help='discard Scribus SLA, generate PDF only. This option is not used when --fast or --noPdf is used.')
-parser.add_argument('-m', '--merge', '--single', action='store_true', default=False,
-                    help='generate a single output (SLA) file that combines all data rows, for each source file.')
-parser.add_argument('-from', '--firstrow', default=CONST.EMPTY, dest='firstRow',
-                    help='Starting row of data to merge (not counting the header row), first row by default.')
-parser.add_argument('-to', '--lastrow', default=CONST.EMPTY, dest='lastRow',
-                    help='Last row of data to merge (not counting the header row), last row by default.')
-parser.add_argument('-s', '--save', action='store_true', default=False,
-                    help='Save current generator settings in (each) Scribus input file(s).')
-parser.add_argument('-l', '--load', action='store_true', default=False,
-                    help='Load generator settings from (each) Scribus input file(s). Overloads all options (but -h).')
+parser.add_argument(
+    "-m",
+    "--merge",
+    "--single",
+    action="store_true",
+    default=False,
+    help="generate a single output (SLA) file that combines all data rows, for each source file.",
+)
+parser.add_argument(
+    "-from",
+    "--firstrow",
+    default=CONST.EMPTY,
+    dest="firstRow",
+    help="Starting row of data to merge (not counting the header row), first row by default.",
+)
+parser.add_argument(
+    "-to",
+    "--lastrow",
+    default=CONST.EMPTY,
+    dest="lastRow",
+    help="Last row of data to merge (not counting the header row), last row by default.",
+)
+parser.add_argument(
+    "-s",
+    "--save",
+    action="store_true",
+    default=False,
+    help="Save current generator settings in (each) Scribus input file(s).",
+)
+parser.add_argument(
+    "-l",
+    "--load",
+    action="store_true",
+    default=False,
+    help="Load generator settings from (each) Scribus input file(s). Overloads all options (but -h).",
+)
 
 
 def ife(test, if_result, else_result):
-    """ Utility if-then-else syntactic sugar
-    """
-    if(test):
+    """Utility if-then-else syntactic sugar"""
+    if test:
         return if_result
     return else_result
 
@@ -113,72 +163,92 @@ args = parser.parse_args()
 #    sys.exit()
 
 # create outDir if needed
-if ((not(args.outDir is None)) and (not os.path.exists(args.outDir))):
-    #print('creating output directory: '+args.outDir)
+if (not (args.outDir is None)) and (not os.path.exists(args.outDir)):
+    # print('creating output directory: '+args.outDir)
     os.makedirs(args.outDir)
 
 # generate
 # Collect the settings made and build the Data Object
 dataObject = GeneratorDataObject(
-    dataSourceFile=ife(not(args.dataFile is None), args.dataFile, CONST.EMPTY),
-    outputDirectory=ife(not(args.outDir is None), args.outDir, CONST.EMPTY),
-    outputFileName=args.outName,    # is CONST.EMPTY by default
+    dataSourceFile=ife(not (args.dataFile is None), args.dataFile, CONST.EMPTY),
+    outputDirectory=ife(not (args.outDir is None), args.outDir, CONST.EMPTY),
+    outputFileName=args.outName,  # is CONST.EMPTY by default
     # ife(args.fast, CONST.FORMAT_SLA, CONST.FORMAT_PDF),
     outputFormat=CONST.FORMAT_SLA,
     # ife(args.pdfOnly, CONST.FALSE, CONST.TRUE), # not used if outputFormat is sla.
     keepGeneratedScribusFiles=CONST.TRUE,
     csvSeparator=args.csvDelimiter,  # is CONST.CSV_SEP by default
-    csvEncoding=args.csvEncoding, # is CONST.CSV_ENCODING by default
+    csvEncoding=args.csvEncoding,  # is CONST.CSV_ENCODING by default
     singleOutput=args.merge,
     firstRow=args.firstRow,
     lastRow=args.lastRow,
-    saveSettings=args.save)
+    saveSettings=args.save,
+)
 
 generator = ScribusGenerator(dataObject)
 log = generator.get_log()
-log.debug("ScribusGenerator is starting generation for %s template(s)." %
-          (str(len(args.infiles))))
+log.debug(
+    "ScribusGenerator is starting generation for %s template(s)."
+    % (str(len(args.infiles)))
+)
 
 for infile in args.infiles:
     dataObject.setScribusSourceFile(infile)
 
-    if(args.load):
+    if args.load:
         saved = generator.get_saved_settings()
 
-        if (saved):
+        if saved:
             dataObject.loadFromString(saved)
             log.info("settings loaded from %s:" % (os.path.split(infile)[1]))
 
         else:
-            log.warning("could not load settings from %s. using arguments and defaults instead" % (
-                os.path.split(infile)[1]))
+            log.warning(
+                "could not load settings from %s. using arguments and defaults instead"
+                % (os.path.split(infile)[1])
+            )
 
-    if(dataObject.getDataSourceFile() is CONST.EMPTY):  # default data file is template-sla+csv
-        dataObject.setDataSourceFile(os.path.splitext(infile)[0]+".csv")
-    if not(os.path.exists(dataObject.getDataSourceFile()) and os.path.isfile(dataObject.getDataSourceFile())):
-        log.warning("found no data file for %s. skipped.   was looking for %s" % (
-            os.path.split(infile)[1], dataObject.getDataSourceFile()))
+    if (
+        dataObject.getDataSourceFile() is CONST.EMPTY
+    ):  # default data file is template-sla+csv
+        dataObject.setDataSourceFile(os.path.splitext(infile)[0] + ".csv")
+    if not (
+        os.path.exists(dataObject.getDataSourceFile())
+        and os.path.isfile(dataObject.getDataSourceFile())
+    ):
+        log.warning(
+            "found no data file for %s. skipped.   was looking for %s"
+            % (os.path.split(infile)[1], dataObject.getDataSourceFile())
+        )
         continue  # skip current template for lack of matching data.
-    if(dataObject.getOutputDirectory() is CONST.EMPTY):  # default outDir is template dir
+    if dataObject.getOutputDirectory() is CONST.EMPTY:  # default outDir is template dir
         dataObject.setOutputDirectory(os.path.split(infile)[0])
         if not os.path.exists(dataObject.getOutputDirectory()):
-            log.info("creating output directory: %s" %
-                     (dataObject.getOutputDirectory()))
+            log.info(
+                "creating output directory: %s" % (dataObject.getOutputDirectory())
+            )
             os.makedirs(dataObject.getOutputDirectory())
-    if(dataObject.getSingleOutput() and (len(args.infiles) > 1)):
-        dataObject.setOutputFileName(
-            args.outName+'__'+os.path.split(infile)[1])
-    log.info("Generating all files for %s in directory %s" %
-             (os.path.split(infile)[1], dataObject.getOutputDirectory()))
+    if dataObject.getSingleOutput() and (len(args.infiles) > 1):
+        dataObject.setOutputFileName(args.outName + "__" + os.path.split(infile)[1])
+    log.info(
+        "Generating all files for %s in directory %s"
+        % (os.path.split(infile)[1], dataObject.getOutputDirectory())
+    )
     try:
         generator.run()
         log.info("Scribus Generation completed. Congrats!")
     except ValueError as e:
-        log.error("\nerror: could likely not replace a variable with its value.\nplease check your CSV data and CSV separator.       moreover: %s\n\n" % e)
+        log.error(
+            "\nerror: could likely not replace a variable with its value.\nplease check your CSV data and CSV separator.       moreover: %s\n\n"
+            % e
+        )
         traceback.print_exc()
     except IndexError as e:
-        log.error("\nerror: could likely not find the value for one variable.\nplease check your CSV data and CSV separator.\n       moreover: %s\n" % e)
+        log.error(
+            "\nerror: could likely not find the value for one variable.\nplease check your CSV data and CSV separator.\n       moreover: %s\n"
+            % e
+        )
         traceback.print_exc
     except Exception:
-        log.error("\nerror: "+traceback.format_exc())
+        log.error("\nerror: " + traceback.format_exc())
         traceback.print_exc
