@@ -174,7 +174,7 @@ dataObject = GeneratorDataObject(
     outputDirectory=ife(not (args.outDir is None), args.outDir, CONST.EMPTY),
     outputFileName=args.outName,  # is CONST.EMPTY by default
     # ife(args.fast, CONST.FORMAT_SLA, CONST.FORMAT_PDF),
-    outputFormat=CONST.FORMAT_SLA,
+    outputFormat=CONST.FORMAT_PDF,
     # ife(args.pdfOnly, CONST.FALSE, CONST.TRUE), # not used if outputFormat is sla.
     keepGeneratedScribusFiles=CONST.TRUE,
     csvSeparator=args.csvDelimiter,  # is CONST.CSV_SEP by default
