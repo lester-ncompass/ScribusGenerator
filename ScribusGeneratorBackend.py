@@ -1028,8 +1028,10 @@ class ScribusGenerator:
                 ) / 2.0  # negative if image taller than frame -> centers the crop
 
                 scribus.setImageOffset(imageX, imageY, object)
-        scribus.setRedraw(True)
-        scribus.setUnit(restore_units)
+
+        # scribus.setRedraw(True)
+        # scribus.setUnit(restore_units)
+        scribus.saveDoc()
         return scribus
 
     def build_file_path(self, directory: str, filename: str, extension: str):
