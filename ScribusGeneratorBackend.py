@@ -982,7 +982,8 @@ class ScribusGenerator:
             i += 1
             pages_count.append(i)
 
-        scribus = self.resize_and_align_image(scribus)
+        scribus = self.resize_and_align_image_to_frame(scribus)
+        scribus = self.resize_and_align_font_to_frame(scribus)
         # (3) Setup Image exporter
         img_exporter = scribus.ImageExport()
         img_exporter.type = "JPG"
@@ -992,12 +993,13 @@ class ScribusGenerator:
         # (4) Save image file
         img_exporter.save()
 
-        # (5) Close document
+        # (5) Save and close document
+        scribus.saveDoc()
         scribus.closeDoc()
 
     # UTILITIES
 
-    def resize_and_align_image(self, scribus):
+    def resize_and_align_image_to_frame(self, scribus):
         # Frame + current image scale
         restore_units = scribus.getUnit()
         objects = scribus.getAllObjects()
@@ -1031,7 +1033,39 @@ class ScribusGenerator:
 
         # scribus.setRedraw(True)
         # scribus.setUnit(restore_units)
-        scribus.saveDoc()
+        return scribus
+
+    def resize_and_align_font_to_frame(
+        self, scribus, min_size=20, step: float = 1.0, per_frame: bool = True
+    ):
+        objects = scribus.getAllObjects()
+        for object in objects:
+            if object.startswith("Text"):
+                length = scribus.getTextLength(
+                    object
+                )  # how many characters in this frame's story
+                scribus.selectText(0, length, object)  # select all
+                size = scribus.getFontSize(object)  # current point size
+
+                # ensure layout is up to date before starting
+                scribus.layoutTextChain(
+                    object
+                )  # reflow the chain; use layoutText(name) if you only care about this frame
+
+                # loop downward until it fits or we hit min_size
+                while size >= min_size:
+                    scribus.setFontSize(size, object)  # apply size
+                    scribus.layoutTextChain(object)  # re-layout after the change
+                    over = scribus.textOverflows(
+                        object, int(per_frame)
+                    )  # 1 if overflow, 0 if it fits
+                    if not over:
+                        break
+                    size -= step
+
+                # clear selection
+                scribus.selectText(0, 0, object)
+
         return scribus
 
     def build_file_path(self, directory: str, filename: str, extension: str):
