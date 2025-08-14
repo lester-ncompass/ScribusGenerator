@@ -47,7 +47,7 @@ class CONST:
     FORMAT_PDF = "PDF"
     FORMAT_SLA = "Scribus"
     FORMAT_IMG = "Image"
-    FILE_EXTENSION_IMG = 'jpg'
+    FILE_EXTENSION_IMG = "jpg"
     FILE_EXTENSION_PDF = "pdf"
     FILE_EXTENSION_SCRIBUS = "sla"
     SEP_PATH = "/"  # In any case we use '/' as path separator on any platform
@@ -464,7 +464,7 @@ class ScribusGenerator:
                     # logging.debug('writing one file with buffer %s' % item)
                     output_file = self.create_output_file(
                         index_current,
-                        self.__dataObject.getOutputFileName(),
+                        str(item.get("name")).replace(" ", "_").lower(),
                         item,
                         len(str(data_count)),
                     )
@@ -982,6 +982,7 @@ class ScribusGenerator:
             i += 1
             pages_count.append(i)
 
+        scribus = self.resize_and_align_image(scribus)
         # (3) Setup Image exporter
         img_exporter = scribus.ImageExport()
         img_exporter.type = "JPG"
@@ -995,6 +996,41 @@ class ScribusGenerator:
         scribus.closeDoc()
 
     # UTILITIES
+
+    def resize_and_align_image(self, scribus):
+        # Frame + current image scale
+        restore_units = scribus.getUnit()
+        objects = scribus.getAllObjects()
+        for object in objects:
+            if object.startswith("Image") and scribus.isLocked(object) == False:
+                scribus.setUnit(0)
+                frameW, frameH = scribus.getSize(object)
+                saveScaleX, saveScaleY = scribus.getImageScale(object)
+
+                # Trick to get the "full" scale so we can compute the displayed image size
+                scribus.setScaleImageToFrame(
+                    1, 0, object
+                )  # scale-to-frame (non-proportional) just to read fullScale
+                fullScaleX, fullScaleY = scribus.getImageScale(object)
+                scribus.setScaleImageToFrame(0, 0, object)  # restore
+                scribus.setImageScale(saveScaleX, saveScaleY, object)
+
+                # Displayed image size inside the frame at the current scale
+                imageW = frameW * (saveScaleX / fullScaleX)
+                imageH = frameH * (saveScaleY / fullScaleY)
+
+                # Center horizontally & vertically (works for both smaller and larger images)
+                imageX = (
+                    frameW - imageW
+                ) / 2.0  # negative if image wider than frame -> centers the crop
+                imageY = (
+                    frameH - imageH
+                ) / 2.0  # negative if image taller than frame -> centers the crop
+
+                scribus.setImageOffset(imageX, imageY, object)
+        scribus.setRedraw(True)
+        scribus.setUnit(restore_units)
+        return scribus
 
     def build_file_path(self, directory: str, filename: str, extension: str):
         # Build an absolute path
