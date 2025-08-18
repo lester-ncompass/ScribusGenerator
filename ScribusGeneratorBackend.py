@@ -464,7 +464,7 @@ class ScribusGenerator:
                     # logging.debug('writing one file with buffer %s' % item)
                     output_file = self.create_output_file(
                         index_current,
-                        str(item.get("name")).replace(" ", "_").lower(),
+                        self.create_file_name(item),
                         item,
                         len(str(data_count)),
                     )
@@ -492,6 +492,14 @@ class ScribusGenerator:
             output_files.append(output_file)
 
         return output_files
+    
+    def create_file_name(self, item):
+        name = str(item.get("name")).replace(" ", "_").lower()
+        description = str(item.get("description")).replace(" ", "_").lower()[:10]
+        category = str(item.get("category")).replace(" ", "_").lower()
+        price = str(item.get("price_whole")).replace(" ", "_").lower()
+        file_name = "{}-{}-{}-{}".format(name, description, category, price)
+        return file_name
 
     def overwrite_with_sg_attributes(self, root):
         # modifies root such that
