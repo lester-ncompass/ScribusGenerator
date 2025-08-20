@@ -1056,12 +1056,10 @@ class ScribusGenerator:
 
                 # Move ^ and ` contents to superscript
                 if "^" in all_text and "`" in all_text:
-                    print(f"{all_text} {len(all_text)}")
                     start = all_text.find("^") 
                     end = (all_text.find("`")) 
                     count = end - start
 
-                    print(f"{start} {end} {count}")
                     scribus.selectText(start, count, object)
                     if "Superscript" not in scribus.getCharStyles():
                         scribus.createCharStyle(name="Superscript", features="inherit, superscript")
