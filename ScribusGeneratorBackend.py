@@ -1052,9 +1052,37 @@ class ScribusGenerator:
                 length = scribus.getTextLength(
                     object
                 )  # how many characters in this frame's story
+                all_text = scribus.getAllText(object)
+
+                # Move ^ and ` contents to superscript
+                if "^" in all_text and "`" in all_text:
+                    print(f"{all_text} {len(all_text)}")
+                    start = all_text.find("^") 
+                    end = (all_text.find("`")) 
+                    count = end - start
+
+                    print(f"{start} {end} {count}")
+                    scribus.selectText(start, count, object)
+                    if "Superscript" not in scribus.getCharStyles():
+                        scribus.createCharStyle(name="Superscript", features="inherit, superscript")
+                    
+                    font_color = scribus.getTextColor(object)
+                    scribus.setCharacterStyle("Superscript", object)
+                    scribus.setTextColor(font_color, object)
+                
                 scribus.selectText(0, length, object)  # select all
                 size = scribus.getFontSize(object)  # current point size
-
+                
+                # Remove ^ and ` from text
+                if "^" in all_text and "`" in all_text:
+                    scribus.selectText(0,length, object) 
+                    start = all_text.find("^")
+                    end = (all_text.find("`")) - 1 
+                    scribus.selectText(start, 1, object)
+                    scribus.deleteText(object)
+                    scribus.selectText(end, 1, object)
+                    scribus.deleteText(object)
+    
                 # ensure layout is up to date before starting
                 scribus.layoutTextChain(
                     object
